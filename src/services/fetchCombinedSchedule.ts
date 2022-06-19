@@ -1,6 +1,7 @@
 import * as cheerio from 'cheerio';
+import { reallyCall3rdParties } from '../config';
 import fetchHtml from './fetchHtml';
-// import mockCombinedSchedule from './mockCombinedSchedule';
+import mockCourtSchedules from './mockCourtSchedules';
 
 const baseUrl = 'https://camdenactive.camden.gov.uk/courses/detail';
 
@@ -10,7 +11,7 @@ const courtUrls: Record<number, string> = {
   3: `${baseUrl}/183/kilburn-grange-tennis-court-3/`,
 };
 
-type CourtSchedule = Record<string, number[]>;
+export type CourtSchedule = Record<string, number[]>;
 
 const fetchCourtSchedule = async (
   courtNumber: number,
@@ -50,7 +51,7 @@ const fetchCourtSchedule = async (
   return courtSchedule;
 };
 
-export type CombinedSchedule = Record<string, Record<number, number[]>>;
+type CombinedSchedule = Record<string, Record<number, number[]>>;
 
 const combineSchedules = (
   courtSchedules: CourtSchedule[],
@@ -75,13 +76,11 @@ const combineSchedules = (
 const fetchCombinedSchedule = async (): Promise<CombinedSchedule> => {
   const courtNumbers = [1, 2, 3];
 
-  const courtSchedules = await Promise.all(
-    courtNumbers.map(fetchCourtSchedule),
-  );
+  const courtSchedules = reallyCall3rdParties()
+    ? await Promise.all(courtNumbers.map(fetchCourtSchedule))
+    : mockCourtSchedules;
 
   const schedule = combineSchedules(courtSchedules);
-
-  // const schedule = mockCombinedSchedule;
 
   return schedule;
 };
